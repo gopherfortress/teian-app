@@ -1,0 +1,32 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/teian-app.html",
+  "fragments": [
+    "src/teian-home.html",
+    "src/my-view2.html",
+    "src/my-view3.html",
+    "src/teian-login.html",
+    "src/teian-suggest.html",
+    "src/teian-404.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*",
+    "bower.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+    {
+      "preset": "es5-bundled"
+    },
+    {
+      "preset": "es6-unbundled"
+    }
+  ]
+}

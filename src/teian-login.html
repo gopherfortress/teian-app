@@ -1,0 +1,160 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="teian-login">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+      .alert-error {
+        background: #ffcdd2;
+        border: 1px solid #f44336;
+        border-radius: 3px;
+        color: #333;
+        font-size: 14px;
+        padding: 10px;
+      }
+    </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-indexeddb-mirror
+        key="user-storage"
+        data="{{storedUser}}"
+        persisted-data="{{persistedUser}}">
+    </app-indexeddb-mirror>
+    <iron-meta key="userData" value="{{persistedUser}}"></iron-meta>
+    <iron-ajax
+        id="loginAjax"
+        method="post"
+        content-type="application/json"
+        handle-as="text"
+        on-response="handleLoginResponse"
+        on-error="handleLoginError">
+    </iron-ajax>
+    <div class="card">
+      <div id="unauthenticated" hidden$="[[_isLoggedIn()]]">
+        <h1>Log In</h1>
+        <template is="dom-if" if="[[error]]">
+          <p class="alert-error"><strong>Error:</strong> [[error]]</p>
+        </template>
+        <paper-input label="username" value="{{formData.username}}"></paper-input>
+        <paper-input label="password" type="password" value="{{formData.password}}"></paper-input>
+        <paper-button raised class="action" on-tap="postLogin">Login</paper-button>
+        <paper-button raised on-tap="printStatus">Status</paper-button>
+      </div>
+      <div id="authenticated" hidden$="[[!_isLoggedIn()]]">
+        <h2>Hello, [[persistedUser.name]]!</h2>
+        <p>You are currently logged in.</p>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    class TeianLogin extends Polymer.Element {
+      static get is() { return 'teian-login'; }
+
+      static get properties() {
+        return {
+          formData: {
+            type: Object,
+            value: {}
+          },
+          user: {
+            type: Object,
+            value: {
+              loggedin: false
+            },
+            notify: true,
+          },
+          userData: {
+            type: Object,
+            value: {
+              loggedin: false
+            }
+          },
+          error: String
+        }
+      }
+
+      _setReqBody() {
+        this.$.loginAjax.body = this.formData;
+      }
+
+      _isLoggedIn() {
+        return this.persistedUser && this.persistedUser.loggedin;
+      }
+
+      postLogin() {
+        this.$.loginAjax.url = 'http://localhost:8080/teian/api/v1/login';
+        this._setReqBody();
+        this.$.loginAjax.generateRequest();
+      }
+
+      printStatus() {
+        console.log("userData: ", this.userData);
+        console.log("storedUser: ", this.storedUser);
+        console.log("persistedUser: ", this.persistedUser);
+        console.log("document.cookie: ", document.cookie);
+      }
+
+      handleLoginResponse(event) {
+        var response = JSON.parse(event.detail.response);
+        console.log(response);
+      
+        if (response.id_token) {
+          this.error = '';
+          this.userData = {
+            name: this.formData.username,
+            access_token: response.access_token,
+            refresh_token: response.refresh_token,
+            loggedin: true
+          };
+          this.storedUser = this.userData;
+          this.user = this.userData;
+        }
+      
+        // reset form data
+        this.formData = {};
+        //this.set('route.path', '/home');
+        console.log("persisted");
+        console.log(this.persistedUser);
+        console.log(this.persistedUser && this.persistedUser.loggedin);
+      }
+
+      handleLoginError(event) {
+        var response = event.detail.request.xhr.response;
+        if (response) {
+          try {
+            var resp = JSON.parse(response);
+            this.error = resp.message;
+          } catch(e) {
+            this.error = response;
+          }
+        } else {
+          this.error = "Oops something went wrong";
+        }
+      }
+
+    }
+
+    window.customElements.define(TeianLogin.is, TeianLogin);
+  </script>
+</dom-module>

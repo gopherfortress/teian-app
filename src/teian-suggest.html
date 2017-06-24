@@ -1,0 +1,42 @@
+<!-- Load the Polymer.Element base class -->
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="teian-suggest">
+  <!-- Defines the element's style and local DOM -->
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 16px;
+      }
+    </style>
+    <app-location route="{{route}}"></app-location>
+    <h1>New Suggestion</h1>
+    <form  id="form" method="post", action="/suggest/submit">
+      <strong>Do you have a suggestion on how to improve the site? Write it here!</strong>
+      <paper-textarea name="text" label="Write your suggestion here."></paper-textarea>
+      <paper-button class="action" raised onclick="submitForm()">Submit</paper-button>
+    </form>
+  </template>
+  <script>
+    class TeianSuggest extends Polymer.Element {
+      static get is() { return 'teian-suggest'; }
+      static get form() { return document.getElementById('form'); }
+    }
+    customElements.define(TeianSuggest.is, TeianSuggest);
+    function submitForm() {
+      TeianSuggest.form.submit();
+    }
+    //TeianSuggest.form.addEventListener('iron-form-presubmit', function() {
+    //  this.request.method = 'put';
+    //  this.request.params = someCustomParams;
+    //});
+  </script>
+</dom-module>
