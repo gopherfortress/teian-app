@@ -37,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-location route="{{route}}"></app-location>
     <app-indexeddb-mirror
         key="user-storage"
-        data="{{storedUser}}"
+        data="{{notEmptyUser}}"
         persisted-data="{{persistedUser}}">
     </app-indexeddb-mirror>
     <iron-meta key="userData" value="{{persistedUser}}"></iron-meta>
@@ -83,6 +83,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               loggedin: false
             },
             notify: true,
+            observer: '_checkNotEmpty',
           },
           userData: {
             type: Object,
@@ -90,8 +91,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               loggedin: false
             }
           },
+          persistedUser: {
+            type: Object,
+            value: {},
+            observer: '_logMe',
+          },
           error: String
         }
+      }
+
+      _checkNotEmpty() {
+        console.log("@@@BBB this.user.length:",this.user.length)
+        if(this.user.length != 0){
+            this.notEmptyUser = this.user
+        }
+      }
+
+      _logMe() {
+        console.log("BB:", this.persistedUser);
       }
 
       _setReqBody() {
@@ -115,6 +132,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log("document.cookie: ", document.cookie);
       }
 
+      __isEmpty(obj) {
+        return Object.keys(obj).length === 0 && obj.constructor === Object
+      }
+
       handleLoginResponse(event) {
         var response = JSON.parse(event.detail.response);
         console.log(response);
@@ -127,7 +148,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             refresh_token: response.refresh_token,
             loggedin: true
           };
-          this.storedUser = this.userData;
+          if(this.userData && this.userData.length != 0){
+            this.storedUser = this.userData;
+          }
+          this.notEmptyUser = this.userData;
           this.user = this.userData;
         }
       

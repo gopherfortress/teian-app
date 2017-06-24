@@ -104,10 +104,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <app-location route="{{route}}"></app-location>
     <iron-request id="xhr"></iron-request>
-    <app-indexeddb-mirror
+    <!-- <app-indexeddb-mirror
         key="user-storage"
-        data="{{user}}"
-        persisted-data="{{persistedUser}}">
+        data="{{notEmptyUser}}"
+        persisted-data="{{persistedUser}}"> -->
     </app-indexeddb-mirror>
     <app-route
         route="{{route}}"
@@ -124,7 +124,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <a name="view2" href="view2">View Two</a>
           <a name="view3" href="view3">View Three</a>
           <a name="login" href="login">Login</a>
-          <template is="dom-if" if="{{persistedUser.loggedin}}" hidden>
+          <template is="dom-if" if="{{user.loggedin}}" hidden>
             <a name="suggest" href="suggest">Suggest</a>
           </template>
         </iron-selector>
@@ -177,6 +177,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             value: {},
             reflectToAttribute: true,
             notify: true,
+            observer: '_checkNotEmpty',
           },
           persistedUser: {
             type: Object,
@@ -185,6 +186,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         };
       }
+
+      _checkNotEmpty() {
+        console.log("@@@AAA this.user.length:", this.user.length)
+        if(this.user.length != 0){
+            this.notEmptyUser = this.user
+        }
+      }
+
 
       static get observers() {
         return [
